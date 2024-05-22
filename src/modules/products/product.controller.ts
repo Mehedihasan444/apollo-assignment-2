@@ -3,7 +3,8 @@ import { ProductServices } from "./product.service";
 
 //
 const createProduct = async (req: Request, res: Response) => {
-  const productData = req.body;
+  try {
+      const productData = req.body;
   const result = await ProductServices.createProduct(productData);
 
   res.json({
@@ -11,6 +12,14 @@ const createProduct = async (req: Request, res: Response) => {
     message: "Product created successfully!",
     data: result,
   });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Could not post product!",
+      data: error,
+    });
+  }
+
 };
 
 //
