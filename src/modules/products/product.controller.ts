@@ -1,17 +1,22 @@
 import { Request, Response } from "express";
 import { ProductServices } from "./product.service";
+import productValidationSchema from "./product.validation";
 
-//
+//CREATE PRODUCT
 const createProduct = async (req: Request, res: Response) => {
   try {
-      const productData = req.body;
-  const result = await ProductServices.createProduct(productData);
+    const productData = req.body;
 
-  res.json({
-    success: true,
-    message: "Product created successfully!",
-    data: result,
-  });
+    // data validation using zod
+    const validationResult = productValidationSchema.parse(productData);
+
+    const result = await ProductServices.createProduct(validationResult);
+
+    res.json({
+      success: true,
+      message: "Product created successfully!",
+      data: result,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -19,7 +24,6 @@ const createProduct = async (req: Request, res: Response) => {
       data: error,
     });
   }
-
 };
 
 //
@@ -41,10 +45,11 @@ const createProduct = async (req: Request, res: Response) => {
 //   }
 // };
 
-//
+//get a single product
 const getAProduct = async (req: Request, res: Response) => {
   try {
     const result = await ProductServices.getAProduct(req.params.productId);
+
     res.status(200).json({
       success: true,
       message: "Product fetched successfully!",
@@ -53,12 +58,12 @@ const getAProduct = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Could not fetch products!",
+      message: "Product not found!",
       data: error,
     });
   }
 };
-//
+//update a product
 const updateAProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.productId;
@@ -78,11 +83,12 @@ const updateAProduct = async (req: Request, res: Response) => {
     });
   }
 };
-//
+// delete a product
 const deleteAProduct = async (req: Request, res: Response) => {
   try {
     const productId = req.params.productId;
     const result = await ProductServices.deleteAProduct(productId);
+    
     res.status(200).json({
       success: true,
       message: "Product deleted successfully!",
@@ -96,7 +102,7 @@ const deleteAProduct = async (req: Request, res: Response) => {
     });
   }
 };
-//
+// search products
 const searchProducts = async (req: Request, res: Response) => {
   try {
     const searchTerm = req.query.searchTerm as string;

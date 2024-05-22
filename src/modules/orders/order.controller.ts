@@ -1,16 +1,20 @@
 import { Request, Response } from "express";
 import { OrderServices } from "./order.service";
 import { Product } from "../products/product.model";
+import orderValidationSchema from "./order.validation";
 
-//
+//create order
 const createOrder = async (req: Request, res: Response) => {
   try {
     const orderData = req.body;
-    const { email, productId, price, quantity } = orderData;
+    const { productId,  quantity } = orderData;
+
+    // data validation using zod
+    const validationResult = orderValidationSchema.parse(orderData);
 
     // Find the product to check inventory
     const product = await Product.findById(productId);
-
+    //
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -30,8 +34,8 @@ const createOrder = async (req: Request, res: Response) => {
     product.inventory.quantity -= quantity;
     product.inventory.inStock = product.inventory.quantity > 0;
     await product.save();
-
-    const result = await OrderServices.CreateOrder(orderData);
+    //
+    const result = await OrderServices.CreateOrder(validationResult);
 
     res.json({
       success: true,
@@ -46,7 +50,7 @@ const createOrder = async (req: Request, res: Response) => {
     });
   }
 };
-//
+//get order based on email
 const getOrders = async (req: Request, res: Response) => {
   try {
     const email = req.query.email as string;
